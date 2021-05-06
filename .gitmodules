@@ -1,0 +1,6 @@
+[submodule "metric/PytorchEMD"]
+	path = metric/PyTorchEMD
+	url = https://github.com/daerduoCarey/PyTorchEMD
+[submodule "metric/PyTorchCD"]
+	path = metric/PyTorchCD
+	url = https://github.com/ThibaultGROUEIX/ChamferDistancePytorch
