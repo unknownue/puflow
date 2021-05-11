@@ -23,6 +23,7 @@ def upsampling(data_paths: List[str], target_path: str, checkpoint_path: str, up
     network.load_state_dict(torch.load(checkpoint_path))
     network.set_to_initialized_state()
     network = network.to(device)
+    network.eval()
     patch_helper = PatchHelper(num_patch, patch_expand_ratio=4, extract='knn')
 
     for path in tqdm(data_paths):
