@@ -13,8 +13,9 @@ Then other settings can be either configured manually or set up with docker.
 
 ### Manual configuration
 
-The code is implemented with CUDA=11.1, torch==1.8.0, python=3.8.
+The code is implemented with CUDA 11.1, Python 3.8, PyTorch 1.8.0.
 Other require libraries:
+
 - pytorch-lightning==1.2.2
 - tensorflow==1.14.0 for dataset loading
 - knn_cuda from https://github.com/unlimblue/KNN_CUDA
@@ -22,7 +23,7 @@ Other require libraries:
 
 ### Docker configuration
 
-If you are familiar with Docker, you can use docker/Dockerfile to configure all setting automatically.
+If you are familiar with Docker, you can use provided [Dockerfile](docker/Dockerfile) to configure all setting automatically.
 
 ### Additional configuration
 
@@ -34,12 +35,12 @@ cp build/lib.linux-x86_64-3.6/emd_cuda.cpython-36m-x86_64-linux-gnu.so .
 ```
 
 ## Datasets
-All training and evaluation data can be downloaded from this link, including:
-- Training data from PUGeo dataset (tfrecord_x4_normal.zip). Put training data as list in data/filelist.txt.
+All training and evaluation data can be downloaded from this [link](https://drive.google.com/drive/folders/1jaKC-bF0yfwpdxfRtuhoQLMhCjiMVPiz?usp=sharing), including:
+- Training data from PUGeo dataset (tfrecord_x4_normal.zip). Put training data as list in [here](data/filelist.txt).
 - Testing models of input 5K points and corresponding ground truth 20K points.
 - Training and testing meshes for further evaluation.
 
-We include a pretrained x4 model (pretrain/puflow-x4-final.pt) in this repo.
+We include a [pretrained x4 model](pretrain/puflow-x4-final.pt) in this repo.
 
 ## Training & Evaluation
 Train the model as followings:

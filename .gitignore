@@ -18,3 +18,4 @@ evaluation/
 preprocessing/EAR/cgal
 preprocessing/EAR/CGAL-5.2.1
 experiments/evaluate_pflow_backup.py
+scripts/

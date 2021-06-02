@@ -55,6 +55,18 @@ class PatchHelper(object):
         patches = patches.flatten(0, 1)  # [B, N, 3]
         patches = patches.reshape(B, -1, self.__npoint_patch, C)  # [B, n_patch, k1, 3]
 
+
+        # if patches.shape[1] < 300:
+        #     predict_patches = PatchHelper.__upsampling_patches(upsampler, patches, upratio, **kwargs)
+        # else:
+        #     predict_patches = []
+        #     start, total = 0, patches.shape[1]
+        #     while start < total:
+        #         end = min(start + 300, total)
+        #         partical_patch = PatchHelper.__upsampling_patches(upsampler, patches[:, start: end], upratio, **kwargs)
+        #         predict_patches.append(partical_patch)
+        #         start = start + 300
+        #     predict_patches = torch.cat(predict_patches, dim=1)
         # [B, n_patch * self.__duplicate_patch, k1 * upratio, 3]
         predict_patches = PatchHelper.__upsampling_patches(upsampler, patches, upratio, **kwargs)
 

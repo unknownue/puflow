@@ -14,9 +14,8 @@ from modules.nets.interpflow import PointInterpFlow
 
 # -----------------------------------------------------------------------------------------
 @torch.no_grad()
-def upsampling(data_paths: List[str], target_path: str, checkpoint_path: str, up_ratio: int, num_outlier: int, num_patch: int, num_upsampling: int):
+def upsampling(data_paths: List[str], target_path: str, checkpoint_path: str, up_ratio: int, num_outlier: int, num_patch: int, num_upsampling: int=None):
 
-    NUM_UPSAMPLING_POINTS = num_upsampling + num_outlier  # the number of points after upsamling
     device = torch.device('cuda:0')
 
     network = PointInterpFlow(pc_channel=3, num_neighbors=8)
@@ -33,6 +32,11 @@ def upsampling(data_paths: List[str], target_path: str, checkpoint_path: str, up
         pt_input = np.loadtxt(path, dtype=np.float32)
         pt_input = torch.from_numpy(pt_input).unsqueeze(0).to(device)
         pt_input = pt_input[:, torch.randperm(pt_input.shape[1])].contiguous()
+        
+        if num_upsampling is None: # the number of points after upsamling
+        	NUM_UPSAMPLING_POINTS = pt_input.shape[1] * up_ratio + num_outlier
+        else:
+            NUM_UPSAMPLING_POINTS = num_upsampling + num_outlier
 
         pred = patch_helper.upsample(network, pt_input, npoint=NUM_UPSAMPLING_POINTS, upratio=up_ratio, jitter=False)
         if num_outlier > 0:
@@ -55,7 +59,7 @@ if __name__ == "__main__":
     parser.add_argument('--checkpoint', type=str, help='Path of checkpoint')
     parser.add_argument('--up_ratio', type=int, help='upsampling ratio', default=4)
     parser.add_argument('--num_patch', type=int, help='number of point in each patch', default=192)
-    parser.add_argument('--num_out', type=int, help='number of point of output point cloud')
+    parser.add_argument('--num_out', type=int, default=None, help='number of point of output point cloud')
     args = parser.parse_args()
 
     data_paths = []

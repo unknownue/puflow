@@ -103,7 +103,7 @@ def train(phase='Train', checkpoint_path: str=None, begin_checkpoint: str=None):
     comment = 'Baseline-Final'
 
     geo_dataset_cfg = OmegaConf.create({
-        'data_path' : 'data/PUGeo/tfrecord_x4_normal/*.tfrecord',
+        'data_path' : 'data/tfrecord_x4_normal/*.tfrecord',
         'batch_size': 32,  # 32
         'num_batch_train': 270,  # 270
         'num_batch_valid': 30,   # 30
