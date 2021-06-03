@@ -32,10 +32,7 @@ class TrainerModule(LightningModule):
         self.valid_metrics = UpsampingMetrics(['CD', 'EMD', 'HD'])
         self.epoch_counter = 1
 
-        self.min_vloss = 0.0030
-        self.min_CD    = 100.0 # 1.350
-        self.min_HD    = 100.0 # 2.5
-        self.min_EMD   = 100.0 # 23.5
+        self.min_CD    = 100.0
 
     def forward(self, p: Tensor, **kwargs):
         return self.network(p, **kwargs)
@@ -92,6 +89,12 @@ class TrainerModule(LightningModule):
             'EMD'      : torch.tensor([x['EMD']       for x in batch]).sum().item(),
             'HD'       : torch.tensor([x['HD']        for x in batch]).sum().item(),
         }
+        
+        if log_dict['CD'] < self.min_CD:
+            save_path = f'runs/ckpt/puflow-x4-CD.ckpt'
+            torch.save(self.network.state_dict(), save_path)
+            print(f'Best CD metric -> {save_path}')
+            self.min_CD = log_dict['CD']
 
         print_progress_log(self.epoch_counter, log_dict)
         self.epoch_counter += 1
@@ -143,6 +146,7 @@ def train(phase='Train', checkpoint_path: str=None, begin_checkpoint: str=None):
             print(f'\nComment: \033[1m{comment}\033[0m')
         if begin_checkpoint is not None:
             module.network.load_state_dict(torch.load(begin_checkpoint))
+            module.network.set_to_initialized_state()
 
         trainer.fit(model=module, datamodule=datamodule)
 
@@ -157,9 +161,10 @@ def train(phase='Train', checkpoint_path: str=None, begin_checkpoint: str=None):
 # -----------------------------------------------------------------------------------------
 if __name__ == "__main__":
 
-    checkpoint_path = 'runs/ckpt/puflo-x4-baseline.ckpt'
+    checkpoint_path = 'runs/ckpt/puflow-x4-baseline.ckpt'
+    previous_path = 'runs/ckpt/puflow-x4-CD.ckpt'
 
-    train('Train', None, None)                      # Train from begining, and save nothing after finish
-    # train('Train', checkpoint_path, None)           # Train from begining, save network params after finish
+    # train('Train', None, None)                      # Train from begining, and save nothing after finish
+    train('Train', checkpoint_path, None)           # Train from begining, save network params after finish
     # train('Train', checkpoint_path, previous_path)  # Train from previous checkpoint, save network params after finish
 
