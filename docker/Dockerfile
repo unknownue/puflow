@@ -40,13 +40,14 @@ RUN pip install --upgrade pip
 # Install from stable build
 RUN pip install --no-cache-dir --user torch==1.8.0 torchvision==0.9.0
 
-RUN pip install --no-cache-dir --user pytorch_lightning==1.2.2 tensorboardX h5py imageio matplotlib ipython omegaconf
+RUN pip install --no-cache-dir --user pytorch_lightning==1.2.2 tensorboardX h5py imageio matplotlib ipython omegaconf torchdiffeq
 RUN pip install --no-cache-dir --user open3d==0.10.0 && sudo apt update && sudo apt install -y libgl1-mesa-glx
 
 # Install some special package
 RUN pip install --user --upgrade https://github.com/unlimblue/KNN_CUDA/releases/download/0.2/KNN_CUDA-0.2-py3-none-any.whl
 RUN sudo wget -P /usr/bin https://github.com/unlimblue/KNN_CUDA/raw/master/ninja && sudo chmod +x /usr/bin/ninja
 RUN pip install --user "git+git://github.com/erikwijmans/Pointnet2_PyTorch.git#egg=pointnet2_ops&subdirectory=pointnet2_ops_lib"
+RUN pip install --user "git+https://github.com/facebookresearch/pytorch3d.git@stable"
 
 # PytorchEMD
 # RUN export FORCE_CUDA="1" && pip install --user "git+git://github.com/daerduoCarey/PyTorchEMD.git"

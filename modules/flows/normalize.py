@@ -9,36 +9,47 @@ from torch import Tensor
 class ActNorm(nn.Module):
     """Yet, another ActNorm implementation for Point Cloud."""
 
-    def __init__(self, channel: int):
+    def __init__(self, channel: int, dim=1):
         super(ActNorm, self).__init__()
 
-        self.logs = nn.Parameter(torch.zeros((1, channel, 1)))  # log sigma
-        self.bias = nn.Parameter(torch.zeros((1, channel, 1)))
+        assert dim in [-1, 1, 2]
+        self.dim = 2 if dim == -1 else dim
+
+        if self.dim == 1:
+            self.logs = nn.Parameter(torch.zeros((1, channel, 1)))  # log sigma
+            self.bias = nn.Parameter(torch.zeros((1, channel, 1)))
+            self.Ndim = 2
+        if self.dim == 2:
+            self.logs = nn.Parameter(torch.zeros((1, 1, channel)))
+            self.bias = nn.Parameter(torch.zeros((1, 1, channel)))
+            self.Ndim = 1
+        
         self.eps = 1e-6
         self.is_inited = False
 
-    def forward(self, x: Tensor):
-        """
-        x: [B, C, N]
-        """
+    def forward(self, x: Tensor, _: Tensor=None):
         if not self.is_inited:
             self.__initialize(x)
 
         z = x * torch.exp(self.logs) + self.bias
         # z = (x - self.bias) * torch.exp(-self.logs)
-        logdet = x.shape[2] * torch.sum(self.logs)
+        logdet = torch.sum(self.logs) * x.shape[self.Ndim]
         return z, logdet
 
-    def inverse(self, z: Tensor):
+    def inverse(self, z: Tensor, _: Tensor=None):
         # x = z * torch.exp(self.logs) + self.bias
         x = (z - self.bias) * torch.exp(-self.logs)
-        return x
+        logdet = -torch.sum(self.logs) * x.shape[self.Ndim]
+        return x, logdet
 
     def __initialize(self, x: Tensor):
         with torch.no_grad():
-            bias = -torch.mean(x.detach(), dim=[0, 2], keepdim=True)
-            logs = -torch.log(torch.std(x.detach(), dim=[0, 2], keepdim=True) + self.eps)
+            dims = [0, 1, 2]
+            dims.remove(self.dim)
+
+            bias = -torch.mean(x.detach(), dim=dims, keepdim=True)
+            logs = -torch.log(torch.std(x.detach(), dim=dims, keepdim=True) + self.eps)
             self.bias.data.copy_(bias.data)
             self.logs.data.copy_(logs.data)
             self.is_inited = True
-
+# -----------------------------------------------------------------------------------------

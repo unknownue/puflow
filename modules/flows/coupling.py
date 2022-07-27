@@ -4,7 +4,7 @@ import torch.nn as nn
 import numpy as np
 
 from torch import Tensor
-from typing import Optional
+from typing import Optional, Dict
 
 from modules.flows.spline.cubic import cubic_spline
 from modules.flows.spline.linear_rational import rational_linear_spline
@@ -13,69 +13,88 @@ from modules.flows.spline.quadratic_rational import rational_quadratic_spline
 
 # -----------------------------------------------------------------------------------------
 class IdentityLayer(nn.Module):
-
-    def __init__(self, **kwargs):
-        super(IdentityLayer, self).__init__()
-    
     def forward(self, x: Tensor, **kwargs):
         return x
-    
-    def inverse(self, z: Tensor, **kwargs):
-        return z
 
 
 # -----------------------------------------------------------------------------------------
 class AffineCouplingLayer(nn.Module):
 
-    def __init__(self, coupling, transform_net, params, split_dim=1, clamp=None):
+    def __init__(self, coupling: str, transform_net: nn.Module, params: Dict, split_dim=1, clamp=None):
         super(AffineCouplingLayer, self).__init__()
 
-        assert coupling in ['additive', 'affine']
-        assert split_dim in [1, 2, 3, -1]
-        self.coupling = coupling
+        assert coupling in ['additive', 'affine', 'affineEx']
+        assert split_dim in [-1, 1, 2, 3]
+        self.coupling  = coupling
         self.dim = split_dim
 
-        if self.coupling == 'additive':
-            self.tran_layer = transform_net(**params)
-        elif self.coupling == 'affine':
-            self.scale_layer = transform_net(**params)
-            self.bias_layer  = transform_net(**params)
-        else:
-            raise NotImplementedError()
+        self.bias_net = transform_net(**params)
 
-        self.clamp_layer = clamp or IdentityLayer()
+        if self.coupling == 'affine':
+            self.scale_net = transform_net(**params)
+        elif self.coupling == 'affineEx':
+            params_t = params
+            params_t['in_channel'] = params['out_channel']
+            params_t['out_channel'] = params['in_channel']
+            self.g1 = transform_net(**params_t)
+            self.g2 = transform_net(**params)
+            self.g3 = transform_net(**params)
 
-    def forward(self, x: Tensor, c: Tensor=None):
+        self.clamping = clamp or IdentityLayer()
+
+    def forward(self, x: Tensor, c: Tensor=None, **kwargs):
 
         h1, h2 = self.channel_split(x)
-        log_det_J = None
 
-        if self.coupling == 'additive':
-            h2 = h2 - self.tran_layer(h1, c)
         if self.coupling == 'affine':
-            scale = self.clamp_layer(self.scale_layer(h1, c))
-            bias  = self.bias_layer(h1, c)
+            scale = self.clamping(self.scale_net(h1, c, **kwargs))
+            bias  = self.bias_net(h1, c, **kwargs)
 
             h2 = (h2 - bias) * torch.exp(-scale)
-            log_det_J = -torch.sum(torch.flatten(scale, start_dim=1), dim=1)
+            log_det_J = -scale.flatten(start_dim=1).sum(1)
+        elif self.coupling == 'additive':
+            bias = self.bias_net(h1, c, **kwargs)
+            h2 = h2 - bias
+            log_det_J = None
+        elif self.coupling == 'affineEx':
+            scale = self.clamping(self.g2(h1, c, **kwargs))
+            bias  = self.g3(h1, c, **kwargs)
+    
+            h1 = h1 + self.g1(h2)
+            h2 = torch.exp(scale) * h2 + bias
+            log_det_J = scale.flatten(start_dim=1).sum(1)
+        else:
+            raise NotImplementedError()
 
         x = self.channel_cat(h1, h2)
         return x, log_det_J
 
-    def inverse(self, x: Tensor, c: Tensor=None):
+    def inverse(self, z: Tensor, c: Tensor=None, **kwargs):
+        
+        h1, h2 = self.channel_split(z)
 
-        h1, h2 = self.channel_split(x)
-
-        if self.coupling == 'additive':
-            h2 = h2 + self.tran_layer(h1, c)
         if self.coupling == 'affine':
-            scale = self.clamp_layer(self.scale_layer(h1, c))
-            bias  = self.bias_layer(h1, c)
+            scale = self.clamping(self.scale_net(h1, c, **kwargs))
+            bias  =  self.bias_net(h1, c, **kwargs)
 
             h2 = h2 * torch.exp(scale) + bias
+            log_det_J = scale.flatten(start_dim=1).sum(1)
+        elif self.coupling == 'additive':
+            bias = self.bias_net(h1, c, **kwargs)
+            h2 = h2 + bias
+            log_det_J = None
+        elif self.coupling == 'affineEx':
+            scale = self.clamping(self.g2(h1, c, **kwargs))
+            bias  = self.g3(h1, c, **kwargs)
 
-        x = self.channel_cat(h1, h2)
-        return x
+            h2 = (h2 - bias) * torch.exp(-scale)
+            h1 = h1 - self.g1(h2)
+            log_det_J = -scale.flatten(start_dim=1).sum(1)
+        else:
+            raise NotImplementedError()
+
+        z = self.channel_cat(h1, h2)
+        return z, log_det_J
 
     def channel_split(self, x: Tensor):
         return torch.chunk(x, 2, dim=self.dim)
@@ -102,31 +121,34 @@ class AffineSpatialCouplingLayer(AffineCouplingLayer):
 # -----------------------------------------------------------------------------------------
 class AffineInjectorLayer(AffineCouplingLayer):
 
-    def __init__(self, coupling, transform_net, params, split_dim=-1, clamp=None):
+    def __init__(self, coupling, transform_net, params, split_dim, clamp=None):
         super().__init__(coupling, transform_net, params, split_dim=split_dim, clamp=clamp)
-    
-    def forward(self, x: Tensor, c: Tensor):
+
+    def forward(self, x: Tensor, c: Tensor, **kwargs):
         log_det_J = None
 
         if self.coupling == 'additive':
-            x = x - self.tran_layer(c)
+            x = x - self.bias_net(c)
         if self.coupling == 'affine':
-            scale = self.clamp_layer(self.scale_layer(c))
-            bias  = self.bias_layer(c)
+            scale = self.clamping(self.scale_net(c, **kwargs))
+            bias  = self.bias_net(c, **kwargs)
 
             x = (x - bias) * torch.exp(-scale)
             log_det_J = -torch.sum(torch.flatten(scale, start_dim=1), dim=1)
 
         return x, log_det_J
 
-    def inverse(self, z: Tensor, c: Tensor):
+    def inverse(self, z: Tensor, c: Tensor, **kwargs):
+        log_det_J = None
+
         if self.coupling == 'additive':
-            z = z + self.tran_layer(c)
+            z = z + self.bias_net(c)
         if self.coupling == 'affine':
-            scale = self.clamp_layer(self.scale_layer(c))
-            bias  = self.bias_layer(c)
+            scale = self.clamping(self.scale_net(c, **kwargs))
+            bias  = self.bias_net(c, **kwargs)
             z = z * torch.exp(scale) + bias
-        return z
+            log_det_J = torch.sum(torch.flatten(scale, start_dim=1), dim=1)
+        return z, log_det_J
 # -----------------------------------------------------------------------------------------
 
 

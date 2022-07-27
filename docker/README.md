@@ -2,21 +2,25 @@
 ## Steps to start
 
 ```bash
-git clone https://github.com/unknownue/PU-Flow.git
-cd PU-Flow/docker
-docker build -t pytorch/pu-flow -f Dockerflie .
+git clone https://github.com/unknownue/puflow.git
+cd puflow/docker
+docker build -t unknownue/nf -f Dockerflie .
 
-cd ../
-docker run -it --rm \
-    -u $(id -u):$(id -g) \
-    -e DISPLAY=unix$DISPLAY \
-    -v $(pwd):/workspace/ \
-    -v /tmp/.X11-unix:/tmp/.X11-unix \
-    -w /workspace \
-    --name pu-gan-runtime \
-    --gpus all \
-    --shm-size 8G \
-    pytorch/pu-flow
-cd ../
-python train_uflow.py
+cd ../../
+docker run -id --rm \
+   -e DISPLAY=unix$DISPLAY \
+   -v /tmp/.X11-unix:/tmp/.X11-unix \
+   -v $(pwd):/workspace \
+   --device /dev/nvidia0 \
+   --device /dev/nvidia-uvm \
+   --device /dev/nvidia-uvm-tools \
+   --device /dev/nvidiactl \
+   --gpus all \                                                    
+   --name nf \    
+   -e NVIDIA_DRIVER_CAPABILITIES=graphics,display,compute,utility \
+   -w /workspace \
+   --shm-size 8G \
+   unknownue/nf
+
+docker exec -it -w /workspace/ nf bash
 ```

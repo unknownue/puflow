@@ -67,8 +67,17 @@ def init_params(module: nn.Module, method: str):
                 print(f'Unsupport layer init methods: {method}')
 
 
-def print_progress_log(epoch: int, logs: dict):
-    print(f'\x1b[2K\rEpoch {epoch:3}:', "".join(f" [{key}]{value:5.3f}" for key, value in logs.items()))
+def print_progress_log(epoch: int, logs: dict, extra=None):
+    console_print = f'\x1b[2K\rEpoch {epoch:3}:'
+    console_print += ''.join(f" [{key}]{value:5.3f}" for key, value in logs.items())
+
+    if extra is not None:
+        if isinstance(extra, str):
+            console_print += '| ' + extra
+        elif isinstance(extra, list) and len(extra) > 0:
+            console_print += '  | ' + "".join(f' {info}' for info in extra)
+
+    print(console_print)
 
 
 def get_tf_num_parameters(model):
@@ -86,3 +95,4 @@ def get_tf_num_parameters(model):
         # print(variable_parameters)
         total_parameters += variable_parameters
     print(total_parameters)
+
