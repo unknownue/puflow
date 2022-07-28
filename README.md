@@ -2,7 +2,9 @@
 
 by Aihua Mao, Zihui Du, Junhui Hou, Yaqi Duan, Yong-jin Liu and Ying He
 
-Official PyTorch implementation for paper: https://xxx.xx
+## Introduction
+
+Official PyTorch implementation of TVCG paper: https://xxx.xx
 
 ## Environment
 
@@ -15,6 +17,7 @@ Then other settings can be either configured manually or set up with docker.
 ### Manual configuration
 
 The code is implemented with CUDA 11.1, Python 3.8, PyTorch 1.8.0.
+
 Other require libraries:
 
 - pytorch-lightning==1.2.2 for training
@@ -39,7 +42,7 @@ python setup.py install --user
 ## Datasets
 All training and evaluation data can be downloaded from this [link](https://drive.google.com/drive/folders/1jaKC-bF0yfwpdxfRtuhoQLMhCjiMVPiz?usp=sharing), including:
 - Training data from PUGeo dataset (tfrecord_x4_normal.zip), PU-GAN dataset and PU1K dataset. Put training data as list in [here](data/filelist.txt).
-- Testing models of input 5K points and corresponding ground truth 20K points.
+- Testing models of input 2K/5K points and corresponding ground truth 8K/20K points.
 - Training and testing meshes for further evaluation.
 
 We include some [pretrained x4 models](pretrain/) in this repo.
