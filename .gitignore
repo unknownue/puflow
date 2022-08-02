@@ -14,8 +14,16 @@ metric/pointnet2/dist
 docker/mirror-ubuntu2004.txt
 docker/pu-net/tensorflow
 docker/pu-net/bashrc
-evaluation/
+# evaluation/
 preprocessing/EAR/cgal
 preprocessing/EAR/CGAL-5.2.1
 experiments/evaluate_pflow_backup.py
 scripts/
+
+evaluation/evaluation
+evaluation/evaluation_code/build/**
+evaluation/result/**
+
+**/*.cu.o
+**/*_so.so
+

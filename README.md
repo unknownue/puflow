@@ -4,7 +4,7 @@ by Aihua Mao, Zihui Du, Junhui Hou, Yaqi Duan, Yong-jin Liu and Ying He
 
 ## Introduction
 
-Official PyTorch implementation of TVCG paper: https://xxx.xx
+Official PyTorch implementation of our TVCG paper: https://xxx.xx
 
 ## Environment
 
@@ -25,7 +25,6 @@ Other require libraries:
 - torchdiffeq form https://github.com/rtqichen/torchdiffeq
 - pytorch3d from https://github.com/facebookresearch/pytorch3d
 - knn_cuda from https://github.com/unlimblue/KNN_CUDA
-- pointnet2lib from https://github.com/erikwijmans/Pointnet2_PyTorch.git
 
 ### Docker configuration
 
@@ -47,7 +46,7 @@ All training and evaluation data can be downloaded from this [link](https://driv
 
 We include some [pretrained x4 models](pretrain/) in this repo.
 
-## Training & Upsampling
+## Training & Upsampling & Evaluation
 Train the model on specific dataset:
 ```bash
 python modules/discrete/train_pu1k.py      # Train the discrete model on PU1K Dataset
@@ -56,7 +55,7 @@ python modules/discrete/train_pugan.py     # Train the discrete model on PU-GAN 
 python modules/continuous/train_interp.py  # Train the continuous model on PU1K Dataset
 ```
 
-Upsampling point clouds as followings:
+Upsampling point clouds as follows:
 ```bash
 # For discrete model
 python modules/discrete/upsample.py \
@@ -73,7 +72,25 @@ python modules/continuous/upsample.py \
     --up_ratio=4
 ```
 
-## Citation
+Evaluation as follows:
+```bash
+# Build files for evaluation (see build.sh for more details)
+bash evaluation/build.sh
+
+# Evaluate on PU1K dataset
+cd evaluation/
+cp path/to/output/directory/**.xyz ./result/
+bash eval_pu1k.sh
+python evaluate.py --pred ./result/ --gt=../data/PU1K/test/input_2048/gt_8192 --save_path=./result/
+
+# Evaluate on PU-GAN dataset
+cd evaluation/
+cp path/to/output/directory/**.xyz ./result/
+bash eval_pugan.sh
+python evaluate.py --pred ./result/ --gt=../data/PU-GAN/GT --save_path=./result/
+```
+
+## Citation(TODO)
 
 If this work is useful for your research, please consider citing:
 
