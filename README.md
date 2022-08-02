@@ -4,7 +4,7 @@ by Aihua Mao, Zihui Du, Junhui Hou, Yaqi Duan, Yong-jin Liu and Ying He
 
 ## Introduction
 
-Official PyTorch implementation of our TVCG paper: https://xxx.xx
+Official PyTorch implementation of our TVCG paper: [[Paper & Supplement]](https://arxiv.org/abs/2107.05893)
 
 ## Environment
 
