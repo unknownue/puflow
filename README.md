@@ -9,9 +9,11 @@ Official PyTorch implementation of our TVCG paper: [[Paper & Supplement]](https:
 ## Environment
 
 First clone the code of this repo:
+
 ```bash
-git clone --recursive https://github.com/unknownue/PU-Flow
+git clone --recursive https://github.com/unknownue/puflow
 ```
+
 Then other settings can be either configured manually or set up with docker.
 
 ### Manual configuration
@@ -33,13 +35,16 @@ If you are familiar with Docker, you can use provided [Dockerfile](docker/Docker
 ### Additional configuration for training
 
 If you want to train the network, you also need to build the kernel of emd like followings:
+
 ```bash
 cd metric/emd/
 python setup.py install --user
 ```
 
 ## Datasets
+
 All training and evaluation data can be downloaded from this [link](https://drive.google.com/drive/folders/1jaKC-bF0yfwpdxfRtuhoQLMhCjiMVPiz?usp=sharing), including:
+
 - Training data from PUGeo dataset (tfrecord_x4_normal.zip), PU-GAN dataset and PU1K dataset. Put training data as list in [here](data/filelist.txt).
 - Testing models of input 2K/5K points and corresponding ground truth 8K/20K points.
 - Training and testing meshes for further evaluation.
@@ -47,7 +52,9 @@ All training and evaluation data can be downloaded from this [link](https://driv
 We include some [pretrained x4 models](pretrain/) in this repo.
 
 ## Training & Upsampling & Evaluation
+
 Train the model on specific dataset:
+
 ```bash
 python modules/discrete/train_pu1k.py      # Train the discrete model on PU1K Dataset
 python modules/discrete/train_pugeo.py     # Train the discrete model on PUGeo Dataset
@@ -56,6 +63,7 @@ python modules/continuous/train_interp.py  # Train the continuous model on PU1K 
 ```
 
 Upsampling point clouds as follows:
+
 ```bash
 # For discrete model
 python modules/discrete/upsample.py \
@@ -73,6 +81,7 @@ python modules/continuous/upsample.py \
 ```
 
 Evaluation as follows:
+
 ```bash
 # Build files for evaluation (see build.sh for more details)
 bash evaluation/build.sh
@@ -106,4 +115,3 @@ If this work is useful for your research, please consider citing:
     doi={}
 }
 ```
-
