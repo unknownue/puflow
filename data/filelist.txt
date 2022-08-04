@@ -1,0 +1,15 @@
+
+data/tfrecord_x4_normal/res_5000_res_20000_p256_shard0.tfrecord
+data/tfrecord_x4_normal/res_5000_res_20000_p256_shard1.tfrecord
+data/tfrecord_x4_normal/res_5000_res_20000_p256_shard2.tfrecord
+data/tfrecord_x4_normal/res_5000_res_20000_p256_shard3.tfrecord
+data/tfrecord_x4_normal/res_5000_res_20000_p256_shard4.tfrecord
+data/tfrecord_x4_normal/res_5000_res_20000_p256_shard5.tfrecord
+data/tfrecord_x4_normal/res_5000_res_20000_p256_shard6.tfrecord
+data/tfrecord_x4_normal/res_5000_res_20000_p256_shard7.tfrecord
+data/tfrecord_x4_normal/res_5000_res_20000_p256_shard8.tfrecord
+
+data/PUGAN_poisson_256_poisson_1024.h5
+
+data/pu1k_poisson_256_poisson_1024_pc_2500_patch50_addpugan.h5
+
